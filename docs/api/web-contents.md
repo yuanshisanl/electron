@@ -959,7 +959,7 @@ stylesheet.
 
 * `key` String
 
-Returns `Promise<any>` - A promise that resolves with the result of the method
+Returns `Promise<void>` - A promise that resolves with the result of the method
 or is rejected if the result of the method is a rejected promise.
 
 Removes the inserted CSS from the current web page. The stylesheet is identified
@@ -978,7 +978,7 @@ contents.on('did-finish-load', function () {
 * `callback` Function (optional) - Called after script has been executed.
   * `result` Any
 
-Returns `Promise<any>` - A promise that resolves with the result of the executed code
+Returns `Promise<void>` - A promise that resolves with the result of the executed code
 or is rejected if the result of the code is a rejected promise.
 
 Evaluates `code` in page.
@@ -1066,7 +1066,7 @@ Returns `Number` - the current zoom level.
 * `minimumLevel` Number
 * `maximumLevel` Number
 
-Returns `Promise<any>` - A promise that resolves with the result of the method
+Returns `Promise<void>` - A promise that resolves with the result of the method
 or is rejected if the result of the method is a rejected promise.
 
 Sets the maximum and minimum pinch-to-zoom level.
@@ -1082,7 +1082,7 @@ Sets the maximum and minimum pinch-to-zoom level.
 * `minimumLevel` Number
 * `maximumLevel` Number
 
-Returns `Promise<any>` - A promise that resolves with the result of the method
+Returns `Promise<void>` - A promise that resolves with the result of the method
 or is rejected if the result of the method is a rejected promise.
 
 Sets the maximum and minimum layout-based (i.e. non-visual) zoom level.

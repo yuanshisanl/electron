@@ -43,6 +43,20 @@ limits of 300% and 50% of original size, respectively.
 
 Returns `Number` - The current zoom level.
 
+#### `webFrame.insertCSS(css)`
+
+* `css` String
+
+Injects CSS into the current web page and returns a unique key for the inserted
+stylesheet.
+
+#### `webFrame.removeInsertedCSS(key)`
+
+* `key` String
+
+Removes the inserted CSS from the current web page. The stylesheet is identified
+by its key, which is returned from `insertCSS`.
+
 ### `webFrame.setVisualZoomLevelLimits(minimumLevel, maximumLevel)`
 
 * `minimumLevel` Number

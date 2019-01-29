@@ -480,10 +480,26 @@ describe('webContents module', () => {
 
   it('supports inserting CSS', (done) => {
     w.loadURL('about:blank')
-    w.webContents.insertCSS('body { background-repeat: round; }')
-    w.webContents.executeJavaScript('window.getComputedStyle(document.body).getPropertyValue("background-repeat")', (result) => {
-      assert.strictEqual(result, 'round')
-      done()
+    w.webContents.insertCSS('body { background-repeat: round; }').then(() => {
+      w.webContents.executeJavaScript('window.getComputedStyle(document.body).getPropertyValue("background-repeat")', (result) => {
+        assert.strictEqual(result, 'round')
+        done()
+      })
+    })
+  })
+
+  it('supports removing inserted CSS', (done) => {
+    w.loadURL('about:blank')
+    w.webContents.insertCSS('body { background-repeat: round; }').then((key) => {
+      w.webContents.executeJavaScript('window.getComputedStyle(document.body).getPropertyValue("background-repeat")', (result) => {
+        assert.strictEqual(result, 'round')
+        w.webContents.removeInsertedCSS(key).then(() => {
+          w.webContents.executeJavaScript('window.getComputedStyle(document.body).getPropertyValue("background-repeat")', (result) => {
+            assert.strictEqual(result, 'repeat')
+            done()
+          })
+        })
+      })
     })
   })
 

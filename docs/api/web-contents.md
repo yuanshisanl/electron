@@ -949,7 +949,21 @@ Returns `String` - The user agent for this web page.
 
 * `css` String
 
-Injects CSS into the current web page.
+Returns `Promise<String>` - A promise that resolves with the result of the method
+or is rejected if the result of the method is a rejected promise.
+
+Injects CSS into the current web page and returns a unique key for the inserted
+stylesheet.
+
+#### `contents.removeInsertedCSS(key)`
+
+* `key` String
+
+Returns `Promise<any>` - A promise that resolves with the result of the method
+or is rejected if the result of the method is a rejected promise.
+
+Removes the inserted CSS from the current web page. The stylesheet is identified
+by its key, which is returned from `insertCSS`.
 
 ```js
 contents.on('did-finish-load', function () {
@@ -1052,6 +1066,9 @@ Returns `Number` - the current zoom level.
 * `minimumLevel` Number
 * `maximumLevel` Number
 
+Returns `Promise<any>` - A promise that resolves with the result of the method
+or is rejected if the result of the method is a rejected promise.
+
 Sets the maximum and minimum pinch-to-zoom level.
 
 > **NOTE**: Visual zoom is disabled by default in Electron. To re-enable it, call:
@@ -1064,6 +1081,9 @@ Sets the maximum and minimum pinch-to-zoom level.
 
 * `minimumLevel` Number
 * `maximumLevel` Number
+
+Returns `Promise<any>` - A promise that resolves with the result of the method
+or is rejected if the result of the method is a rejected promise.
 
 Sets the maximum and minimum layout-based (i.e. non-visual) zoom level.
 
@@ -1125,6 +1145,9 @@ Executes the editing command `replaceMisspelling` in web page.
 #### `contents.insertText(text)`
 
 * `text` String
+
+Returns `Promise<any>` - A promise that resolves with the result of the method
+or is rejected if the result of the method is a rejected promise.
 
 Inserts `text` to the focused element.
 

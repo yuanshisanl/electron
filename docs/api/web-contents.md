@@ -949,8 +949,9 @@ Returns `String` - The user agent for this web page.
 
 * `css` String
 
-Returns `Promise<String>` - A promise that resolves with the result of the method
-or is rejected if the result of the method is a rejected promise.
+Returns `Promise<String>` - A promise that resolves with a key for the inserted
+CSS that can later be used to remove the CSS via
+`contents.removeInsertedCSS(key)`.
 
 Injects CSS into the current web page and returns a unique key for the inserted
 stylesheet.

@@ -47,7 +47,8 @@ Returns `Number` - The current zoom level.
 
 * `css` String
 
-Returns `String` - A unique identifier for the inserted stylesheet.
+Returns `String` - A key for the inserted CSS that can later be used to remove
+the CSS via `webFrame.removeInsertedCSS(key)`.
 
 Injects CSS into the current web page and returns a unique key for the inserted
 stylesheet.
@@ -57,7 +58,7 @@ stylesheet.
 * `key` String
 
 Removes the inserted CSS from the current web page. The stylesheet is identified
-by its key, which is returned from `insertCSS`.
+by its key, which is returned from `webFrame.insertCSS(css)`.
 
 ### `webFrame.setVisualZoomLevelLimits(minimumLevel, maximumLevel)`
 

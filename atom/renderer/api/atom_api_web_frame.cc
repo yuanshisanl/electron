@@ -316,15 +316,15 @@ base::string16 InsertCSS(v8::Local<v8::Value> window, const std::string& css) {
   blink::WebFrame* web_frame = GetRenderFrame(window)->GetWebFrame();
   if (web_frame->IsWebLocalFrame()) {
     return web_frame->ToWebLocalFrame()->GetDocument().InsertStyleSheet(
-        blink::WebString::FromUTF8(css));
+        blink::WebString::FromUTF8(css)).Utf16();
   }
   return base::string16();
 }
 
-void WebFrame::RemoveInsertedCSS(const base::string16& key) {
+void RemoveInsertedCSS(v8::Local<v8::Value> window, const base::string16& key) {
   blink::WebFrame* web_frame = GetRenderFrame(window)->GetWebFrame();
   if (web_frame->IsWebLocalFrame()) {
-    web_frame_->GetDocument().RemoveInsertedStyleSheet(
+    web_frame->ToWebLocalFrame()->GetDocument().RemoveInsertedStyleSheet(
         blink::WebString::FromUTF16(key));
   }
 }
@@ -539,7 +539,7 @@ void Initialize(v8::Local<v8::Object> exports,
   dict.SetMethod("setSpellCheckProvider", &SetSpellCheckProvider);
   dict.SetMethod("insertText", &InsertText);
   dict.SetMethod("insertCSS", &InsertCSS);
-  dict.SetMethod("removeInsertedCSS", &RemoveInsertedCSS)
+  dict.SetMethod("removeInsertedCSS", &RemoveInsertedCSS);
   dict.SetMethod("executeJavaScript", &ExecuteJavaScript);
   dict.SetMethod("executeJavaScriptInIsolatedWorld",
                  &ExecuteJavaScriptInIsolatedWorld);

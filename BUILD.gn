@@ -620,8 +620,15 @@ static_library("electron_lib") {
     include_dirs += [ "//third_party/breakpad" ]
   }
 
-  if (enable_pdf) {
-    deps += [ "//pdf" ]
+  if (enable_pdf_viewer) {
+    deps += [
+      "//components/guest_view/common",
+      "//components/pdf/browser",
+      "//content/public/common:service_names",
+      "//extensions/common/api",
+      "//pdf",
+      "//services/service_manager/public/cpp",
+    ]
   }
 
   if (enable_run_as_node) {

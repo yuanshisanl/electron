@@ -148,9 +148,8 @@ void RendererClientBase::AddRenderBindings(
 void RendererClientBase::RenderThreadStarted() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
-  // TODO(samuelmaddock): extensions client
-  // extensions_client_.reset(CreateExtensionsClient());
-  // ExtensionsClient::Set(extensions_client_.get());
+  extensions_client_.reset(CreateExtensionsClient());
+  ExtensionsClient::Set(extensions_client_.get());
 
   extensions_renderer_client_.reset(new AtomExtensionsRendererClient);
   ExtensionsRendererClient::Set(extensions_renderer_client_.get());
@@ -327,6 +326,10 @@ v8::Local<v8::Value> RendererClientBase::RunScript(
   if (!maybe_script.ToLocal(&script))
     return v8::Local<v8::Value>();
   return script->Run(context).ToLocalChecked();
+}
+
+extensions::ExtensionsClient* AtomRendererClientBase::CreateExtensionsClient() {
+  return new AtomExtensionsClient;
 }
 
 }  // namespace atom

@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "atom/common/atom_extensions_client.h"
 #include "atom/common/color_util.h"
 #include "atom/common/native_mate_converters/value_converter.h"
 #include "atom/common/options_switches.h"
 #include "atom/renderer/atom_autofill_agent.h"
+#include "atom/renderer/atom_extensions_renderer_client.h"
 #include "atom/renderer/atom_render_frame_observer.h"
 #include "atom/renderer/atom_render_view_observer.h"
 #include "atom/renderer/content_settings_observer.h"
@@ -24,6 +26,12 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "electron/buildflags/buildflags.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "native_mate/dictionary.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/web/blink.h"
@@ -139,6 +147,13 @@ void RendererClientBase::AddRenderBindings(
 
 void RendererClientBase::RenderThreadStarted() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
+
+  // TODO(samuelmaddock): extensions client
+  // extensions_client_.reset(CreateExtensionsClient());
+  // ExtensionsClient::Set(extensions_client_.get());
+
+  extensions_renderer_client_.reset(new AtomExtensionsRendererClient);
+  ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
   blink::WebCustomElement::AddEmbedderCustomElementName("webview");
   blink::WebCustomElement::AddEmbedderCustomElementName("browserplugin");

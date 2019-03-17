@@ -14,6 +14,7 @@
 #include "atom/common/promise_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/launchd.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_number_conversions.h"
@@ -301,6 +302,15 @@ std::string Browser::GetExecutableFileProductName() const {
 int Browser::DockBounce(BounceType type) {
   return [[AtomApplication sharedApplication]
       requestUserAttention:static_cast<NSRequestUserAttentionType>(type)];
+}
+
+// Restarts the Dock process by sending it a SIGTERM.
+void Browser::DockRestart() {
+  pid_t pid = base::mac::PIDForJob("com.apple.Dock.agent");
+  if (pid <= 0)
+    return;
+
+  kill(pid, SIGTERM);
 }
 
 void Browser::DockCancelBounce(int request_id) {

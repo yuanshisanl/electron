@@ -169,6 +169,8 @@ class Browser : public WindowListObserver {
   void DockSetBadgeText(const std::string& label);
   std::string DockGetBadgeText();
 
+  void DockRestart();
+
   // Hide/Show dock.
   void DockHide();
   v8::Local<v8::Promise> DockShow(v8::Isolate* isolate);

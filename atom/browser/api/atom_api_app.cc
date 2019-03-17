@@ -1284,6 +1284,7 @@ v8::Local<v8::Value> App::GetDockAPI(v8::Isolate* isolate) {
                        base::Bind(&Browser::DockSetBadgeText, browser));
     dock_obj.SetMethod("getBadge",
                        base::Bind(&Browser::DockGetBadgeText, browser));
+    dock_obj.SetMethod("restart", base::Bind(&Browser::DockRestart, browser));
     dock_obj.SetMethod("hide", base::Bind(&Browser::DockHide, browser));
     dock_obj.SetMethod("show", base::Bind(&Browser::DockShow, browser));
     dock_obj.SetMethod("isVisible",

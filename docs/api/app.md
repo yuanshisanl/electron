@@ -1302,6 +1302,10 @@ Sets the string to be displayed in the dock’s badging area.
 
 Returns `String` - The badge string of the dock.
 
+### `app.dock.restart()` _macOS_
+
+Restarts the dock process.
+
 ### `app.dock.hide()` _macOS_
 
 Hides the dock icon.

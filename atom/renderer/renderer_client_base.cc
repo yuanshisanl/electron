@@ -24,6 +24,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "electron/buildflags/buildflags.h"
 #include "extensions/common/extensions_client.h"
@@ -147,12 +148,15 @@ void RendererClientBase::AddRenderBindings(
 
 void RendererClientBase::RenderThreadStarted() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
+  auto* thread = content::RenderThread::Get();
 
   extensions_client_.reset(CreateExtensionsClient());
   extensions::ExtensionsClient::Set(extensions_client_.get());
 
   extensions_renderer_client_.reset(new AtomExtensionsRendererClient);
   extensions::ExtensionsRendererClient::Set(extensions_renderer_client_.get());
+
+  thread->AddObserver(extensions_renderer_client_->GetDispatcher());
 
   blink::WebCustomElement::AddEmbedderCustomElementName("webview");
   blink::WebCustomElement::AddEmbedderCustomElementName("browserplugin");
@@ -250,6 +254,12 @@ void RendererClientBase::RenderFrameCreated(
       }
     }
   }
+
+  auto* dispatcher = extensions_renderer_client_->GetDispatcher();
+  // ExtensionFrameHelper destroys itself when the RenderFrame is destroyed.
+  new extensions::ExtensionFrameHelper(render_frame, dispatcher);
+
+  dispatcher->OnRenderFrameCreated(render_frame);
 }
 
 void RendererClientBase::RenderViewCreated(content::RenderView* render_view) {

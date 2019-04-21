@@ -1238,6 +1238,18 @@ Returns `String` - The command-line switch value.
 
 **Note:** When the switch is not present or has no value, it returns empty string.
 
+### `app.enableSecureMode([options])` _Experimental_
+
+* `options` Object (optional)
+  * `configurableSandbox` Boolean (optional)
+  * `configurableContextIsolation` Boolean (optional)
+  * `configurableNativeWindowOpen` Boolean (optional)
+  * `configurableRemoteModule` Boolean (optional)
+
+Enables [secure mode](secure-mode.md).
+
+This method can only be called before WebContents are created.
+
 ### `app.enableSandbox()` _Experimental_
 
 Enables full sandbox mode on the app.
@@ -1366,6 +1378,10 @@ in your apps initialization to ensure that your overridden value is used.
 ### `app.isPackaged`
 
 A `Boolean` property that returns  `true` if the app is packaged, `false` otherwise. For many apps, this property can be used to distinguish development and production environments.
+
+### `app.secureModeEnabled`
+
+A `Boolean` property that returns `true` if [secure mode](secure-mode.md) is enabled, `false` otherwise.
 
 [dock-menu]:https://developer.apple.com/macos/human-interface-guidelines/menus/dock-menus/
 [tasks]:https://msdn.microsoft.com/en-us/library/windows/desktop/dd378460(v=vs.85).aspx#tasks

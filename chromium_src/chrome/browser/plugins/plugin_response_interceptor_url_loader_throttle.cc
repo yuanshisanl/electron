@@ -15,6 +15,7 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/features.h"
@@ -52,6 +53,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
     return;
 
   std::string view_id = base::GenerateGUID();
+  // The string passed down to the original client with the response body.
+  std::string payload = view_id;
 
   network::mojom::URLLoaderPtr dummy_new_loader;
   mojo::MakeRequest(&dummy_new_loader);
@@ -59,11 +62,18 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   network::mojom::URLLoaderClientRequest new_client_request =
       mojo::MakeRequest(&new_client);
 
-  mojo::DataPipe data_pipe(64);
-  uint32_t len = static_cast<uint32_t>(view_id.size());
+  uint32_t data_pipe_size = 64U;
+  // Provide the MimeHandlerView code a chance to override the payload. This is
+  // the case where the resource is handled by frame-based MimeHandlerView.
+  extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+      frame_tree_node_id_, response_url, response_head->mime_type, view_id,
+      &payload, &data_pipe_size);
+
+  mojo::DataPipe data_pipe(data_pipe_size);
+  uint32_t len = static_cast<uint32_t>(payload.size());
   CHECK_EQ(MOJO_RESULT_OK,
            data_pipe.producer_handle->WriteData(
-               view_id.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+               payload.c_str(), &len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 
   new_client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
@@ -92,8 +102,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->head = std::move(deep_copied_response->head);
   transferrable_loader->head.intercepted_by_plugin = true;
 
-  bool embedded = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
-
+  bool embedded =
+      resource_type_ != static_cast<int>(content::ResourceType::kMainFrame);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(

@@ -1,6 +1,7 @@
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/manifest.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
@@ -703,6 +704,18 @@ static_library("electron_lib") {
 
   if (enable_pepper_flash) {
     deps += [ "components/pepper_flash" ]
+  }
+
+  if (enable_electron_extensions) {
+    public_deps += [ "atom/common/extensions/api:extensions_features" ]
+    deps += [
+      "//components/pref_registry",
+      "//components/user_prefs",
+      "//extensions/browser",
+      "//extensions/common",
+      "//extensions/renderer",
+    ]
+    sources += filenames.lib_sources_extensions
   }
 }
 

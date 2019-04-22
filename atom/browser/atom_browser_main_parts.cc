@@ -91,6 +91,17 @@
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
 #endif
 
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+#include "atom/browser/extensions/atom_browser_context_keyed_service_factories.h"
+#include "atom/browser/extensions/atom_extension_system.h"
+#include "atom/browser/extensions/atom_extension_system_factory.h"
+#include "atom/browser/extensions/atom_extensions_browser_client.h"
+#include "atom/common/extensions/atom_extensions_client.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"  // nogncheck
+#include "extensions/browser/browser_context_keyed_service_factories.h"  // nogncheck
+#include "extensions/common/extension_api.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+
 namespace atom {
 
 namespace {
@@ -196,6 +207,15 @@ int X11EmptyIOErrorHandler(Display* d) {
 #endif
 
 }  // namespace
+
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+void AtomBrowserMainParts::InitializeExtensionSystem() {
+  extension_system_ = static_cast<extensions::AtomExtensionSystem*>(
+      extensions::ExtensionSystem::Get(browser_context_.get()));
+  extension_system_->InitForRegularProfile(true /* extensions_enabled */);
+  extension_system_->FinishInitialization();
+}
+#endif
 
 void AtomBrowserMainParts::InitializeFeatureList() {
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -361,6 +381,10 @@ int AtomBrowserMainParts::PreCreateThreads() {
 }
 
 void AtomBrowserMainParts::PostDestroyThreads() {
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  extensions_browser_client_.reset();
+  extensions::ExtensionsBrowserClient::Set(nullptr);
+#endif
 #if defined(OS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();
@@ -401,6 +425,27 @@ void AtomBrowserMainParts::PreMainMessageLoopRun() {
   node_bindings_->PrepareMessageLoop();
   node_bindings_->RunMessageLoop();
 
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  extensions_client_ = std::make_unique<AtomExtensionsClient>();
+  extensions::ExtensionsClient::Set(extensions_client_.get());
+
+  // BrowserContextKeyedAPIServiceFactories require an ExtensionsBrowserClient.
+  extensions_browser_client_ = std::make_unique<AtomExtensionsBrowserClient>();
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
+  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  extensions::atom::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+
+  browser_context_ = AtomBrowserContext::From("", false);
+
+  extensions_browser_client_->InitWithBrowserContext(
+      browser_context_.get(), browser_context_.get()->prefs());
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      browser_context_.get());
+
+  InitializeExtensionSystem();
+#endif
+
   // url::Add*Scheme are not threadsafe, this helps prevent data races.
   url::LockSchemeRegistries();
 
@@ -433,6 +478,17 @@ void AtomBrowserMainParts::PreMainMessageLoopRun() {
 
   // Notify observers that main thread message loop was initialized.
   Browser::Get()->PreMainMessageLoopRun();
+
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch("load-extension")) {
+    auto load_extension = cmd_line->GetSwitchValueASCII("load-extension");
+    auto extension_path = base::FilePath::FromUTF8Unsafe(load_extension);
+    auto* extension_system = static_cast<extensions::AtomExtensionSystem*>(
+        extensions::ExtensionSystem::Get(browser_context_.get()));
+    extension_system->LoadExtension(extension_path);
+  }
+#endif
 }
 
 bool AtomBrowserMainParts::MainMessageLoopRun(int* result_code) {
@@ -486,6 +542,10 @@ void AtomBrowserMainParts::PostMainMessageLoopRun() {
       std::move(callback).Run();
     ++iter;
   }
+
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  extension_system_ = NULL;
+#endif
 
   fake_browser_process_->PostMainMessageLoopRun();
 }

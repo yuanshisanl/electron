@@ -24,6 +24,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
@@ -41,6 +42,15 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/features.h"
+
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+#include "components/pref_registry/pref_registry_syncable.h"      // nogncheck
+#include "components/user_prefs/user_prefs.h"                     // nogncheck
+#include "extensions/browser/extension_pref_store.h"              // nogncheck
+#include "extensions/browser/extension_pref_value_map_factory.h"  // nogncheck
+#include "extensions/browser/extension_prefs.h"                   // nogncheck
+#include "extensions/browser/pref_names.h"                        // nogncheck
+#endif
 
 using content::BrowserThread;
 
@@ -129,7 +139,16 @@ void AtomBrowserContext::InitPrefs() {
   pref_store->ReadPrefs();  // Synchronous.
   prefs_factory.set_user_prefs(pref_store);
 
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  auto* ext_pref_store = new ExtensionPrefStore(
+      ExtensionPrefValueMapFactory::GetForBrowserContext(this),
+      IsOffTheRecord());
+  prefs_factory.set_extension_prefs(ext_pref_store);
+
+  auto registry = WrapRefCounted(new user_prefs::PrefRegistrySyncable);
+#else
   auto registry = WrapRefCounted(new PrefRegistrySimple);
+#endif
 
   registry->RegisterFilePathPref(prefs::kSelectFileLastDirectory,
                                  base::FilePath());
@@ -142,11 +161,17 @@ void AtomBrowserContext::InitPrefs() {
   MediaDeviceIDSalt::RegisterPrefs(registry.get());
   ZoomLevelDelegate::RegisterPrefs(registry.get());
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  extensions::ExtensionPrefs::RegisterProfilePrefs(registry.get());
+#endif
 
   prefs_ = prefs_factory.Create(
       registry.get(),
       std::make_unique<PrefStoreDelegate>(weak_factory_.GetWeakPtr()));
   prefs_->UpdateCommandLinePrefStore(new ValueMapPrefStore);
+#if BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
+  user_prefs::UserPrefs::Set(this, prefs_.get());
+#endif
 }
 
 void AtomBrowserContext::SetUserAgent(const std::string& user_agent) {
@@ -301,6 +326,16 @@ AtomBrowserContext::GetBrowsingDataRemoverDelegate() {
 content::ClientHintsControllerDelegate*
 AtomBrowserContext::GetClientHintsControllerDelegate() {
   return nullptr;
+}
+
+void AtomBrowserContext::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  // This method is called for Extension supports, but tests do not need to
+  // support exceptional CORS handling.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 
 net::URLRequestContextGetter*

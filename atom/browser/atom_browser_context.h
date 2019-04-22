@@ -17,6 +17,7 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_context.h"
+#include "electron/buildflags/buildflags.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -91,6 +92,13 @@ class AtomBrowserContext
   net::URLRequestContextGetter* CreateMediaRequestContext() override;
   content::ClientHintsControllerDelegate* GetClientHintsControllerDelegate()
       override;
+
+  // extensions deps
+  void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override;
 
   CookieChangeNotifier* cookie_change_notifier() const {
     return cookie_change_notifier_.get();

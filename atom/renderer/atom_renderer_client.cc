@@ -49,6 +49,7 @@ void AtomRendererClient::RenderFrameCreated(
 
 void AtomRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
+  RendererClientBase::RunScriptsAtDocumentStart(render_frame);
   // Inform the document start pharse.
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   node::Environment* env = GetEnvironment(render_frame);
@@ -58,6 +59,7 @@ void AtomRendererClient::RunScriptsAtDocumentStart(
 
 void AtomRendererClient::RunScriptsAtDocumentEnd(
     content::RenderFrame* render_frame) {
+  RendererClientBase::RunScriptsAtDocumentEnd(render_frame);
   // Inform the document end pharse.
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   node::Environment* env = GetEnvironment(render_frame);

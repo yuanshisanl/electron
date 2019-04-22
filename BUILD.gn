@@ -625,6 +625,7 @@ static_library("electron_lib") {
       "//components/guest_view/common",
       "//components/pdf/browser",
       "//content/public/common:service_names",
+      "//extensions/browser",
       "//extensions/common/api",
       "//pdf",
       "//services/service_manager/public/cpp",

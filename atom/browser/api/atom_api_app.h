@@ -210,6 +210,7 @@ class App : public AtomBrowserClient::Delegate,
   v8::Local<v8::Promise> GetGPUInfo(v8::Isolate* isolate,
                                     const std::string& info_type);
   void EnableSandbox(mate::Arguments* args);
+  v8::Local<v8::Value> GetInstanceCounts(v8::Isolate* isolate);
 
 #if defined(OS_MACOSX)
   bool MoveToApplicationsFolder(mate::Arguments* args);

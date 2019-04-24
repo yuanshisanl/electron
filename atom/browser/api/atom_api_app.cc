@@ -7,9 +7,24 @@
 #include <string>
 #include <vector>
 
+#include "atom/browser/api/atom_api_browser_view.h"
+#include "atom/browser/api/atom_api_cookies.h"
+#include "atom/browser/api/atom_api_debugger.h"
+#include "atom/browser/api/atom_api_desktop_capturer.h"
+#include "atom/browser/api/atom_api_download_item.h"
+#include "atom/browser/api/atom_api_global_shortcut.h"
 #include "atom/browser/api/atom_api_menu.h"
+#include "atom/browser/api/atom_api_net_log.h"
+#include "atom/browser/api/atom_api_notification.h"
+#include "atom/browser/api/atom_api_power_monitor.h"
+#include "atom/browser/api/atom_api_power_save_blocker.h"
+#include "atom/browser/api/atom_api_protocol.h"
+#include "atom/browser/api/atom_api_protocol_ns.h"
 #include "atom/browser/api/atom_api_session.h"
+#include "atom/browser/api/atom_api_top_level_window.h"
+#include "atom/browser/api/atom_api_tray.h"
 #include "atom/browser/api/atom_api_web_contents.h"
+#include "atom/browser/api/atom_api_web_request.h"
 #include "atom/browser/api/gpuinfo_manager.h"
 #include "atom/browser/atom_browser_context.h"
 #include "atom/browser/atom_browser_main_parts.h"
@@ -52,6 +67,11 @@
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
+
+#if BUILDFLAG(ENABLE_VIEW_API)
+#include "atom/browser/api/atom_api_view.h"
+#include "atom/browser/api/views/atom_api_layout_manager.h"
+#endif
 
 #if defined(OS_WIN)
 #include "atom/browser/ui/win/jump_list.h"
@@ -1268,6 +1288,42 @@ void App::EnableSandbox(mate::Arguments* args) {
   command_line->AppendSwitch(switches::kEnableSandbox);
 }
 
+v8::Local<v8::Value> App::GetInstanceCounts(v8::Isolate* isolate) {
+  std::map<std::string, size_t> counts {
+    {"BrowserView", mate::TrackableObject<BrowserView>::GetCount()},
+        {"Cookies", mate::TrackableObject<Cookies>::GetCount()},
+        {"Debugger", mate::TrackableObject<Debugger>::GetCount()},
+        {"DesktopCapturer", mate::TrackableObject<DesktopCapturer>::GetCount()},
+        {"DownloadItem", mate::TrackableObject<DownloadItem>::GetCount()},
+        {"GlobalShortcut", mate::TrackableObject<GlobalShortcut>::GetCount()},
+        {"Menu", mate::TrackableObject<Menu>::GetCount()},
+        {"NetLog", mate::TrackableObject<NetLog>::GetCount()},
+        {"Notification", mate::TrackableObject<Notification>::GetCount()},
+        {"PowerMonitor", mate::TrackableObject<PowerMonitor>::GetCount()},
+        {"PowerSaveBlocker",
+         mate::TrackableObject<PowerSaveBlocker>::GetCount()},
+        {"ProtocolNS", mate::TrackableObject<ProtocolNS>::GetCount()},
+        {"Protocol", mate::TrackableObject<Protocol>::GetCount()},
+        {"Session", mate::TrackableObject<Session>::GetCount()},
+        {"TopLevelWindow", mate::TrackableObject<TopLevelWindow>::GetCount()},
+        {"Tray", mate::TrackableObject<Tray>::GetCount()},
+        {"WebContents", mate::TrackableObject<WebContents>::GetCount()},
+        {"WebRequest", mate::TrackableObject<WebRequest>::GetCount()},
+#if BUILDFLAG(ENABLE_VIEW_API)
+        {"View", mate::TrackableObject<View>::GetCount()},
+        {"LayoutManager", mate::TrackableObject<LayoutManager>::GetCount()},
+#endif
+  };
+
+  mate::Dictionary dict = mate::Dictionary::CreateEmpty(isolate);
+  for (auto&& it : counts) {
+    if (it.second > 0) {
+      dict.Set(it.first, it.second);
+    }
+  }
+  return dict.GetHandle();
+}
+
 #if defined(OS_MACOSX)
 bool App::MoveToApplicationsFolder(mate::Arguments* args) {
   return ui::cocoa::AtomBundleMover::Move(args);
@@ -1428,6 +1484,7 @@ void App::BuildPrototype(v8::Isolate* isolate,
 #if defined(OS_MACOSX)
       .SetProperty("dock", &App::GetDockAPI)
 #endif
+      .SetMethod("getInstanceCounts", &App::GetInstanceCounts)
       .SetMethod("enableSandbox", &App::EnableSandbox);
 }
 

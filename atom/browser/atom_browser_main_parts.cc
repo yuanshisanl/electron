@@ -102,6 +102,16 @@
 #include "extensions/common/extension_api.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_ELECTRON_EXTENSIONS)
 
+#if BUILDFLAG(ENABLE_PDF_VIEWER)
+#include "base/files/file_path.h"
+#include "base/json/json_string_value_serializer.h"
+#include "base/values.h"
+#include "electron/grit/electron_resources.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
+#include "ui/base/resource/resource_bundle.h"
+#endif  // BUILDFLAG(ENABLE_PDF_VIEWER)
+
 namespace atom {
 
 namespace {
@@ -488,6 +498,27 @@ void AtomBrowserMainParts::PreMainMessageLoopRun() {
         extensions::ExtensionSystem::Get(browser_context_.get()));
     extension_system->LoadExtension(extension_path);
   }
+#endif
+
+#if BUILDFLAG(ENABLE_PDF_VIEWER)
+  std::string manifest_contents = ui::ResourceBundle::GetSharedInstance()
+                                      .GetRawDataResource(IDR_PDF_MANIFEST)
+                                      .as_string();
+  JSONStringValueDeserializer deserializer(manifest_contents);
+  std::unique_ptr<base::Value> manifest = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::DictionaryValue> manifestDict =
+      base::DictionaryValue::From(std::move(manifest));
+  if (!manifest.get() || !manifest->is_dict()) {
+    LOG(ERROR) << "Failed to parse extension manifest.";
+  } else {
+    LOG(ERROR) << "PARSED extension manifest.";
+  }
+  int flags = extensions::Extension::REQUIRE_KEY;
+  std::string utf8_error;
+  scoped_refptr<extensions::Extension> pdfExtension =
+      extensions::Extension::Create(base::FilePath(FILE_PATH_LITERAL("pdf")),
+                                    extensions::Manifest::COMPONENT,
+                                    *manifestDict, flags, &utf8_error);
 #endif
 }
 

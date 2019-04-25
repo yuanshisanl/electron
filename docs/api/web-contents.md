@@ -956,19 +956,25 @@ CSS that can later be used to remove the CSS via
 Injects CSS into the current web page and returns a unique key for the inserted
 stylesheet.
 
+```js
+contents.on('did-finish-load', function () {
+  contents.insertCSS('html, body { background-color: #f00; }')
+})
+```
+
 #### `contents.removeInsertedCSS(key)`
 
 * `key` String
 
-Returns `Promise<void>` - A promise that resolves with the result of the method
-or is rejected if the result of the method is a rejected promise.
+Returns `Promise<void>` - Resolves if the removal was successful.
 
 Removes the inserted CSS from the current web page. The stylesheet is identified
-by its key, which is returned from `insertCSS`.
+by its key, which is returned from `contents.insertCSS(css)`.
 
 ```js
-contents.on('did-finish-load', function () {
-  contents.insertCSS('html, body { background-color: #f00; }')
+contents.on('did-finish-load', async function () {
+  const key = await contents.insertCSS('html, body { background-color: #f00; }')
+  contents.removeInsertedCSS(key)
 })
 ```
 

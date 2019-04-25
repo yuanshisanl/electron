@@ -503,6 +503,13 @@ describe('webContents module', () => {
     })
   })
 
+  it('removing inserted CSS fails if key is invalid', (done) => {
+    w.loadURL('about:blank')
+    w.webContents.removeInsertedCSS(0).then(() => {
+      assert.fail('Should not resolve when method fails')
+    }).finally(done)
+  })
+
   it('supports inspecting an element in the devtools', (done) => {
     w.loadURL('about:blank')
     w.webContents.once('devtools-opened', () => {

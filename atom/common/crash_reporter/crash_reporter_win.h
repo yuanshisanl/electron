@@ -7,11 +7,8 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "atom/common/crash_reporter/crash_reporter.h"
-#include "base/compiler_specific.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "atom/common/crash_reporter/crash_reporter_crashpad.h"
 
 namespace base {
 template <typename T>
@@ -20,7 +17,7 @@ struct DefaultSingletonTraits;
 
 namespace crash_reporter {
 
-class CrashReporterWin : public CrashReporter {
+class CrashReporterWin : public CrashReporterCrashpad {
  public:
   static CrashReporterWin* GetInstance();
 
@@ -31,44 +28,12 @@ class CrashReporterWin : public CrashReporter {
                     const base::FilePath& crashes_dir,
                     bool upload_to_server,
                     bool skip_system_crash_handler) override;
-  void SetUploadParameters() override;
-
-  // Crashes the process after generating a dump for the provided exception.
-  int CrashForException(EXCEPTION_POINTERS* info);
 
  private:
   friend struct base::DefaultSingletonTraits<CrashReporterWin>;
 
   CrashReporterWin();
   ~CrashReporterWin() override;
-
-  static bool FilterCallback(void* context,
-                             EXCEPTION_POINTERS* exinfo,
-                             MDRawAssertionInfo* assertion);
-
-  static bool MinidumpCallback(const wchar_t* dump_path,
-                               const wchar_t* minidump_id,
-                               void* context,
-                               EXCEPTION_POINTERS* exinfo,
-                               MDRawAssertionInfo* assertion,
-                               bool succeeded);
-
-  // Returns the custom info structure based on parameters.
-  google_breakpad::CustomClientInfo* GetCustomInfo(
-      const std::string& product_name,
-      const std::string& version,
-      const std::string& company_name,
-      bool upload_to_server);
-
-  // Custom information to be passed to crash handler.
-  std::vector<google_breakpad::CustomInfoEntry> custom_info_entries_;
-  google_breakpad::CustomClientInfo custom_info_;
-
-  bool skip_system_crash_handler_ = false;
-#ifdef _WIN64
-  bool code_range_registered_ = false;
-#endif
-  std::unique_ptr<google_breakpad::ExceptionHandler> breakpad_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashReporterWin);
 };

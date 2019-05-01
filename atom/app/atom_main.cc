@@ -163,9 +163,9 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd, int) {
   }
 #endif
 
-  if (IsEnvSet("ELECTRON_INTERNAL_CRASH_SERVICE")) {
-    return crash_service::Main(cmd);
-  }
+  // if (IsEnvSet("ELECTRON_INTERNAL_CRASH_SERVICE")) {
+  //   return crash_service::Main(cmd);
+  // }
 
   if (!atom::CheckCommandLineArguments(arguments.argc, arguments.argv))
     return -1;

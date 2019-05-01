@@ -21,9 +21,11 @@
 #include "base/guid.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "net/url_request/url_request.h"
 #endif  // BUILDFLAG(ENABLE_PDF_VIEWER)
@@ -45,12 +47,18 @@ bool AtomResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     GURL* origin,
     std::string* payload) {
 #if BUILDFLAG(ENABLE_PDF_VIEWER)
+  content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
   if (mime_type == "application/pdf") {
     StreamTargetInfo target_info;
     *origin = GURL(base::StrCat({"chrome-extension://", kPdfExtensionId}));
     target_info.extension_id = kPdfExtensionId;
     target_info.view_id = base::GenerateGUID();
     *payload = target_info.view_id;
+    uint32_t unused_data_pipe_size;
+    extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+        info->GetFrameTreeNodeId(), request->url(), mime_type,
+        target_info.view_id, payload, &unused_data_pipe_size);
     stream_target_info_[request] = target_info;
     return true;
   }

@@ -748,7 +748,7 @@ content::BrowserMainParts* AtomBrowserClient::CreateBrowserMainParts(
 
 void AtomBrowserClient::WebNotificationAllowed(
     int render_process_id,
-    const base::Callback<void(bool, bool)>& callback) {
+    const base::RepeatingCallback<void(bool, bool)>& callback) {
   content::WebContents* web_contents =
       WebContentsPreferences::GetWebContentsFromProcessID(render_process_id);
   if (!web_contents) {
@@ -794,14 +794,10 @@ void AtomBrowserClient::RenderProcessExited(
 }
 
 void OnOpenExternal(const GURL& escaped_url, bool allowed) {
-  if (allowed)
+  if (allowed) {
     platform_util::OpenExternal(
-#if defined(OS_WIN)
-        base::UTF8ToUTF16(escaped_url.spec()),
-#else
-        escaped_url,
-#endif
-        platform_util::OpenExternalOptions());
+        escaped_url, platform_util::OpenExternalOptions(), base::DoNothing());
+  }
 }
 
 void HandleExternalProtocolInUI(

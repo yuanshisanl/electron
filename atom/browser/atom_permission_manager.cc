@@ -112,7 +112,7 @@ int AtomPermissionManager::RequestPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(blink::mojom::PermissionStatus)>&
+    const base::RepeatingCallback<void(blink::mojom::PermissionStatus)>&
         response_callback) {
   return RequestPermissionWithDetails(permission, render_frame_host,
                                       requesting_origin, user_gesture, nullptr,
@@ -129,7 +129,8 @@ int AtomPermissionManager::RequestPermissionWithDetails(
   return RequestPermissionsWithDetails(
       std::vector<content::PermissionType>(1, permission), render_frame_host,
       requesting_origin, user_gesture, details,
-      base::Bind(&PermissionRequestResponseCallbackWrapper, response_callback));
+      base::BindRepeating(&PermissionRequestResponseCallbackWrapper,
+                          response_callback));
 }
 
 int AtomPermissionManager::RequestPermissions(
@@ -181,8 +182,8 @@ int AtomPermissionManager::RequestPermissionsWithDetails(
   for (size_t i = 0; i < permissions.size(); ++i) {
     auto permission = permissions[i];
     const auto callback =
-        base::Bind(&AtomPermissionManager::OnPermissionResponse,
-                   base::Unretained(this), request_id, i);
+        base::BindRepeating(&AtomPermissionManager::OnPermissionResponse,
+                            base::Unretained(this), request_id, i);
     if (details == nullptr) {
       request_handler_.Run(web_contents, permission, callback,
                            base::DictionaryValue());

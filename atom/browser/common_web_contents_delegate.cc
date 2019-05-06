@@ -522,15 +522,15 @@ void CommonWebContentsDelegate::DevToolsIndexPath(
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>(
           devtools_file_system_indexer_->IndexPath(
               file_system_path, excluded_folders,
-              base::Bind(
+              base::BindRepeating(
                   &CommonWebContentsDelegate::OnDevToolsIndexingWorkCalculated,
                   weak_factory_.GetWeakPtr(), request_id, file_system_path),
-              base::Bind(&CommonWebContentsDelegate::OnDevToolsIndexingWorked,
-                         weak_factory_.GetWeakPtr(), request_id,
-                         file_system_path),
-              base::Bind(&CommonWebContentsDelegate::OnDevToolsIndexingDone,
-                         weak_factory_.GetWeakPtr(), request_id,
-                         file_system_path)));
+              base::BindRepeating(
+                  &CommonWebContentsDelegate::OnDevToolsIndexingWorked,
+                  weak_factory_.GetWeakPtr(), request_id, file_system_path),
+              base::BindRepeating(
+                  &CommonWebContentsDelegate::OnDevToolsIndexingDone,
+                  weak_factory_.GetWeakPtr(), request_id, file_system_path)));
 }
 
 void CommonWebContentsDelegate::DevToolsStopIndexing(int request_id) {
@@ -552,8 +552,9 @@ void CommonWebContentsDelegate::DevToolsSearchInPath(
   }
   devtools_file_system_indexer_->SearchInPath(
       file_system_path, query,
-      base::Bind(&CommonWebContentsDelegate::OnDevToolsSearchCompleted,
-                 weak_factory_.GetWeakPtr(), request_id, file_system_path));
+      base::BindRepeating(&CommonWebContentsDelegate::OnDevToolsSearchCompleted,
+                          weak_factory_.GetWeakPtr(), request_id,
+                          file_system_path));
 }
 
 void CommonWebContentsDelegate::OnDevToolsIndexingWorkCalculated(

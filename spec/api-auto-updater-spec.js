@@ -24,17 +24,20 @@ describe('autoUpdater module', function () {
         expect(message).to.equal('Update URL is not set')
         done()
       })
-      autoUpdater.setFeedURL('')
+      autoUpdater.initialize('')
       autoUpdater.checkForUpdates()
     })
   })
 
-  describe('getFeedURL', () => {
+  describe('feedURL', () => {
     it('returns a falsey value by default', () => {
+      // TODO(jkleinsc): Remove in 7.0
       expect(autoUpdater.getFeedURL()).to.equal('')
+
+      expect(autoUpdater.feedURL).to.equal('')
     })
 
-    it('correctly fetches the previously set FeedURL', function (done) {
+    it('correctly fetches the previously set FeedURL via initialize', function (done) {
       if (process.platform !== 'win32') {
         // FIXME(alexeykuzmin): Skip the test.
         // this.skip()
@@ -42,13 +45,34 @@ describe('autoUpdater module', function () {
       }
 
       const updateURL = 'https://fake-update.electron.io'
-      autoUpdater.setFeedURL(updateURL)
+      autoUpdater.initialize(updateURL)
+
+      // TODO(jkleinsc): Remove in 7.0
       expect(autoUpdater.getFeedURL()).to.equal(updateURL)
+
+      expect(autoUpdater.feedURL).to.equal(updateURL)
       done()
     })
   })
 
-  describe('setFeedURL', function () {
+  it('correctly fetches the previously set FeedURL via feedURL property', function (done) {
+    if (process.platform !== 'win32') {
+      // FIXME(alexeykuzmin): Skip the test.
+      // this.skip()
+      return done()
+    }
+
+    const updateURL = 'https://fake-update.electron.io'
+    autoUpdater.feedURL = updateURL
+
+    // TODO(jkleinsc): Remove in 7.0
+    expect(autoUpdater.getFeedURL()).to.equal(updateURL)
+
+    expect(autoUpdater.feedURL).to.equal(updateURL)
+    done()
+  })
+
+  describe('initialize', function () {
     describe('on Mac or Windows', () => {
       const noThrow = (fn) => {
         try { fn() } catch (err) {}
@@ -62,25 +86,33 @@ describe('autoUpdater module', function () {
 
       it('sets url successfully using old (url, headers) syntax', () => {
         const url = 'http://electronjs.org'
-        noThrow(() => autoUpdater.setFeedURL(url, { header: 'val' }))
+        noThrow(() => autoUpdater.initialize(url, { header: 'val' }))
+
+        // TODO(jkleinsc): Remove in 7.0
         expect(autoUpdater.getFeedURL()).to.equal(url)
+
+        expect(autoUpdater.feedURL).to.equal(url)
       })
 
       it('throws if no url is provided when using the old style', () => {
-        expect(() => autoUpdater.setFeedURL(),
+        expect(() => autoUpdater.initialize(),
           err => err.message.includes('Expected an options object with a \'url\' property to be provided') // eslint-disable-line
         ).to.throw()
       })
 
       it('sets url successfully using new ({ url }) syntax', () => {
         const url = 'http://mymagicurl.local'
-        noThrow(() => autoUpdater.setFeedURL({ url }))
+        noThrow(() => autoUpdater.initialize({ url }))
+
+        // TODO(jkleinsc): Remove in 7.0
         expect(autoUpdater.getFeedURL()).to.equal(url)
+
+        expect(autoUpdater.feedURL).to.equal(url)
       })
 
       it('throws if no url is provided when using the new style', () => {
-        expect(() => autoUpdater.setFeedURL({ noUrl: 'lol' }),
-          err => err.message.includes('Expected options object to contain a \'url\' string property in setFeedUrl call') // eslint-disable-line
+        expect(() => autoUpdater.initialize({ noUrl: 'lol' }),
+          err => err.message.includes('Expected options object to contain a \'url\' string property in initialize call') // eslint-disable-line
         ).to.throw()
       })
     })
@@ -99,23 +131,23 @@ describe('autoUpdater module', function () {
           expect(message).equal('Could not get code signature for running application')
           done()
         })
-        autoUpdater.setFeedURL('')
+        autoUpdater.initialize('')
       })
 
       it('does not throw if default is the serverType', () => {
-        expect(() => autoUpdater.setFeedURL({ url: '', serverType: 'default' }),
+        expect(() => autoUpdater.initialize({ url: '', serverType: 'default' }),
           isServerTypeError
         ).to.not.throw()
       })
 
       it('does not throw if json is the serverType', () => {
-        expect(() => autoUpdater.setFeedURL({ url: '', serverType: 'default' }),
+        expect(() => autoUpdater.initialize({ url: '', serverType: 'default' }),
           isServerTypeError
         ).to.not.throw()
       })
 
       it('does throw if an unknown string is the serverType', () => {
-        expect(() => autoUpdater.setFeedURL({ url: '', serverType: 'weow' }),
+        expect(() => autoUpdater.initialize({ url: '', serverType: 'weow' }),
           isServerTypeError
         ).to.throw()
       })
@@ -152,7 +184,7 @@ describe('autoUpdater module', function () {
         done()
       })
 
-      autoUpdater.setFeedURL('')
+      autoUpdater.initialize('')
 
       if (process.platform === 'win32') {
         autoUpdater.checkForUpdates()

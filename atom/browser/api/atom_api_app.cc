@@ -876,7 +876,7 @@ void App::SetPath(mate::Arguments* args,
   int key = GetPathConstant(name);
   if (key >= 0)
     succeed =
-        base::PathService::OverrideAndCreateIfNeeded(key, path, true, false);
+        base::PathService::OverrideAndCreateIfNeeded(key, path, true, true);
   if (!succeed)
     args->ThrowError("Failed to set path");
 }

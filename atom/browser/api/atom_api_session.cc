@@ -169,14 +169,6 @@ const char kPersistPrefix[] = "persist:";
 // Referenced session objects.
 std::map<uint32_t, v8::Global<v8::Object>> g_sessions;
 
-void SetCertVerifyProcInIO(
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    const AtomCertVerifier::VerifyProc& proc) {
-  auto* request_context = context_getter->GetURLRequestContext();
-  static_cast<AtomCertVerifier*>(request_context->cert_verifier())
-      ->SetVerifyProc(proc);
-}
-
 void AllowNTLMCredentialsForDomainsInIO(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     const std::string& domains) {
@@ -435,19 +427,12 @@ void WrapVerifyProc(
 
 void Session::SetCertVerifyProc(v8::Local<v8::Value> val,
                                 mate::Arguments* args) {
-  base::RepeatingCallback<void(const VerifyRequestParams& request,
-                               base::RepeatingCallback<void(int)>)>
-      proc;
+  AtomBrowserContext::CertVerifyProc proc;
   if (!(val->IsNull() || mate::ConvertFromV8(args->isolate(), val, &proc))) {
     args->ThrowError("Must pass null or function");
     return;
   }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SetCertVerifyProcInIO,
-                     WrapRefCounted(browser_context_->GetRequestContext()),
-                     base::BindRepeating(&WrapVerifyProc, proc)));
+  browser_context_->SetCertVerifyProc(proc);
 }
 
 void Session::SetPermissionRequestHandler(v8::Local<v8::Value> val,

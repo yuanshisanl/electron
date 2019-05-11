@@ -34,22 +34,19 @@ void CrashReporterWin::InitBreakpad(const std::string& product_name,
     base::PathService::Get(base::FILE_EXE, &handler_path);
 
     std::vector<std::string> args = {
-        "--no-rate-limit",
+        "--type=crashpad-handler", "--no-rate-limit",
         "--no-upload-gzip",  // not all servers accept gzip
     };
-
     crashpad::CrashpadClient crashpad_client;
     crashpad_client.StartHandler(handler_path, crashes_dir, crashes_dir,
                                  submit_url, StringMap(), args, true, false);
   }
-
   crashpad::CrashpadInfo* crashpad_info =
       crashpad::CrashpadInfo::GetCrashpadInfo();
   if (skip_system_crash_handler) {
     crashpad_info->set_system_crash_reporter_forwarding(
         crashpad::TriState::kDisabled);
   }
-
   simple_string_dictionary_.reset(new crashpad::SimpleStringDictionary());
   crashpad_info->set_simple_annotations(simple_string_dictionary_.get());
 

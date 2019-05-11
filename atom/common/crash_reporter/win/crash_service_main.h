@@ -8,7 +8,7 @@
 namespace crash_service {
 
 // Program entry, should be called by main();
-int Main(const wchar_t* cmd_line);
+int Main(int argc, char* argv[]);
 
 }  // namespace crash_service
 
